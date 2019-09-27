@@ -1,26 +1,31 @@
-(() => {
+async function start () {
   const CLIENT_ID = 'f5tasfbltuqwuuhbbewri3p2mgmm54'
 
   //fetch top sentiments from Fritz's endpoint
   //let topSentiments = await fetch()
 
   // for now here's some dummy data
-  let topSentiments = [{
-    UserName: 'nodebotanist',
-    Sentiment: 1.0
-  }, {
-    UserName: 'noopkat',
-    Sentiment: 0.9
-  }, {
-    UserName: 'talk2megooseman',
-    Sentiment: 0.85
-  },{
-    UserName: 'luckynos7evin',
-    Sentiment: 0.8
-  },{
-    UserName: 'csharpfritz',
-    Sentiment: 0.7
-  }]
+  // let topSentiments = [{
+  //   UserName: 'nodebotanist',
+  //   Sentiment: 1.0
+  // }, {
+  //   UserName: 'noopkat',
+  //   Sentiment: 0.9
+  // }, {
+  //   UserName: 'talk2megooseman',
+  //   Sentiment: 0.85
+  // },{
+  //   UserName: 'luckynos7evin',
+  //   Sentiment: 0.8
+  // },{
+  //   UserName: 'csharpfritz',
+  //   Sentiment: 0.7
+  // }]
+  let topSentiments = await fetch('https://twitchcon.csharpfritz.com/sentiment/top/nodebotanist', {
+    method: 'GET'
+  })
+
+  topSentiments = await topSentiments.json()
 
   // cycle through each
   topSentiments.forEach(async function(user){
@@ -41,4 +46,6 @@
     // inject li
     document.querySelector('.js-top-sentiment').appendChild(liElement)
   })
-})()
+}
+
+start()
