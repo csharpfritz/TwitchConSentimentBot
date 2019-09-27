@@ -1,0 +1,12 @@
+ul {
+  list-style: none;
+}
+
+img {
+  max-height: 50px;
+}
+
+p {
+  margin-left: 1em;
+  display: inline-block;
+}
