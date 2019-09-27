@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^8.1.0",
+    "superagent": "^5.1.0",
     "tmi.js": "^1.5.0"
   }
 }
