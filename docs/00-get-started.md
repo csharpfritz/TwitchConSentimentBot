@@ -12,6 +12,9 @@ We recommend you choose a rich code editor like [Visual Studio Code](https://cod
 
 The code for the bot has been written and tested with [.NET Core 3](https://dot.net) and [Node 10.16](https://nodejs.org).
 
+For the extensions you will be building in modules two and three, you will need the [Twitch Developer Rig](https://github.com/twitchdev/developer-rig) installed.  Download from their GitHub repository for your operating system. 
+
+
 ## The Twitch Developer Portal
 
 The developer platform for Twitch is accessed at https://dev.twitch.tv  From here, you will be able to define applications and extensions as well as find documentation for all of the APIs on the platform.
