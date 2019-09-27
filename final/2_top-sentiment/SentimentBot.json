@@ -1,0 +1,59 @@
+{
+  "allowHttpBackend": false,
+  "backendCommand": "node services/backend.js -c f5tasfbltuqwuuhbbewri3p2mgmm54 -s dweDCU9a/6YVtZ1z9iftsSFzw6EN27wDOCUQ/t/kgK8= -o 130223788",
+  "backendFolderName": "C:\\Users\\Nodebotanist\\code\\TwitchConSentimentBot\\final\\2_top-sentiment",
+  "certificateExceptions": [],
+  "extensionViews": [],
+  "manifest": {
+    "anchor": "panel",
+    "assetUrls": [],
+    "authorName": "",
+    "bitsEnabled": false,
+    "canInstall": true,
+    "configUrl": "https://localhost:8080/config.html",
+    "configurationLocation": "none",
+    "description": "",
+    "eulaTosUrl": "",
+    "hasChatSupport": false,
+    "iconUrl": "",
+    "iconUrls": {},
+    "id": "f5tasfbltuqwuuhbbewri3p2mgmm54",
+    "installationCount": -42,
+    "liveConfigUrl": "",
+    "name": "SentimentBot",
+    "panelHeight": 300,
+    "privacyPolicyUrl": "",
+    "requestIdentityLink": false,
+    "requiredBroadcasterAbilities": [],
+    "screenshotUrls": [],
+    "sku": "",
+    "state": "Testing",
+    "subscriptionsSupportLevel": "none",
+    "summary": "",
+    "supportEmail": "",
+    "vendorCode": "",
+    "version": "0.0.1",
+    "viewerSummary": "",
+    "viewerUrl": "https://localhost:8080/panel.html",
+    "viewerUrls": {
+      "panel": "https://localhost:8080/panel.html"
+    },
+    "views": {
+      "panel": {
+        "viewerUrl": "https://localhost:8080/panel.html",
+        "height": 300,
+        "canLinkExternalContent": false
+      },
+      "config": {
+        "viewerUrl": "https://localhost:8080/config.html",
+        "canLinkExternalContent": false
+      }
+    },
+    "whitelistedConfigUrls": [],
+    "whitelistedPanelUrls": []
+  },
+  "frontendCommand": "http-server",
+  "frontendFolderName": "C:\\Users\\Nodebotanist\\code\\TwitchConSentimentBot\\final\\2_top-sentiment\\public",
+  "name": "SentimentBot",
+  "version": 1
+}
