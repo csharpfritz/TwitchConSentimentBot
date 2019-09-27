@@ -6,9 +6,10 @@ You will complete the following tasks and learn how to:
 
   + Authenticate with Twitch chat servers
   + Identify Twitch IRC extensions 
+  + Listen to and identify Twitch chat activity
+  + Keep alive your bot when Twitch tests its status
   + Send messages and whispers to the Twitch chat servers
   + Rate limits for interacting with Twitch APIs
-  + Keep alive your bot when Twitch tests its status
 
 The application framework has been built for you, along with the interactions with our sentiment analysis service.  We are providing this base framework so that you do not have to learn about how to build the project, and can instead focus on learning how to interact with the Twitch APIs.  
 
@@ -42,30 +43,86 @@ Further down in the method, you will see the loop that listens for messages on t
 
 Next, let's write the Login method to grant our bot access to the platform.  We need to send four messages to being this connection.  Write these four strings into the `_OutputStream.WriteLine();` methods in the Login method:
 
-    "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership"
+    "CAP REQ :twitch.tv/commands twitch.tv/membership"
 
-This defines
+This requests various additional pieces of information about chat rooms and capabilities of Twitch chat:
 
+  + `twitch.tv/commands` enables some Twitch specific commands 
+  + `twitch.tv/membership` adds information about the membership state in the chat room
 
-$"PASS oauth:{AccessToken}"
+Next, let's send our credentials to login by writing the following into the `_OutputStream.WriteLine()` with the following three commands:
 
-$"NICK {BotName}"
+    $"PASS oauth:{AccessToken}"
+    $"NICK {BotName}"
+    $"USER {BotName} 8 * :{BotName}"
 
-$"USER {BotName} 8 * :{BotName}"
+This uses a little C# string interpolation to place an Access Token into the password field.  Additionally, the name of your account, the BotName, will be used as a nickname and the user account for the login.  
 
-$"JOIN #{ChannelName}"
+The values for the `AccessToken` and the `BotName` are stored in `appSettings.json` in the `Bot.Name` field and the `Bot.AccessToken` properties.  Replace the dummy values there with the name of your bot's Twitch account and the Access token (without the leading `oauth:`) for your account.
 
-$"JOIN #chatrooms:{ChannelId}:{ChatroomId}"
+Next, we need to join the channel that our bot will listen to.  We can join the default chat room for a channel with the following command, let's add it to the last `_OutputStream.WriteLine` command:
 
-Identify Chat and Whispers
-      reChatMessage = new Regex($@"PRIVMSG #{ChannelName} :(.*)$");
-      reWhisperMessage = new Regex($@"WHISPER {BotName} :(.*)$");
+    $"JOIN #{ChannelName}"
 
+This joins the specified channel.  The ChannelName value is fetched from the `Bot.Channel` property in the `appSettings.json` file.
 
-$":{BotName}!{BotName}@{BotName}.tmi.twitch.tv PRIVMSG #chatrooms:{ChannelId}:{ChatroomId} :{message}";
+With these values entered, out bot now knows how to connect to Twitch with the account we chose and join the channel specified.
 
-$":{BotName}!{BotName}@{BotName}.tmi.twitch.tv PRIVMSG #{ChannelName} :{message}";
+## Listening to the chat room
 
-$":{BotName}!{BotName}@{BotName}.tmi.twitch.tv PRIVMSG #jtv :/w {userName} {message}"
+Chat messages from Twitch in the current room come in the raw format of `PRIVMSG #CHANNELNAME :<MESSAGE>` and private messages for our bot are sent in the format `WHISPER BOTNAME :<MESSAGE>`.  We can easily write some regular expressions to help identify these two message formats.  Add the regular expression assignments in the constructor of the Chatbot.cs file, where noted with a TODO with these values:
 
-      send($"PONG :{message.Split(':')[1]}");
+    reChatMessage = new Regex($@"PRIVMSG #{ChannelName} :(.*)$");
+    reWhisperMessage = new Regex($@"WHISPER {BotName} :(.*)$");
+
+We can now identify the different message types our chatbot will see.
+
+## Sending messages to Twitch
+
+Besides broadcasting messages to the chatroom and sending private messages, we will also need to handle the Twitch keep-alive messagge called a `PING`.  Twitch will send the following message every 5 minutes to check if a chat client is still connected:
+
+    PING :tmi.twitch.tv
+
+Your bot will need to respond appropriately to this `PING` with a `PONG` or Twitch will disconnect it for inactivity.  A method has already been started for you in the Chatbot.cs file called `HandlePong`. Add the following response code where indicated with the TODO:
+
+    _OutputStream.WriteLine($"PONG :{message.Split(':')[1]}");
+    _OutputStream.Flush();
+
+This will split the incoming `PING` message, capturing the information after the colon and sending it back as the response.   
+
+Congratulations, your bot now will stay connected to Twitch as long as your application is running.
+
+## Sending Messages to Chat
+
+We need to properly format messages that are sent to the Twitch chat room.  There are two methods in this class that format appropriately the IRC message for you and are called `PostMessage` and `WhisperMessage` appropriately.
+
+In `PostMessage` add the following format for the `fullMessage` string variable:
+
+    $":{BotName}!{BotName}@{BotName}.tmi.twitch.tv PRIVMSG #{ChannelName} :{message}";
+
+This format indicates the Bot is sending a message on the Twitch server, privately to the recipients in the `ChannelName` channel with the `message` as the contents to be displayed.
+
+We can format private messages, or whispers similarly in the `WhisperMessage` method's `fullMessage` variable:
+
+    $":{BotName}!{BotName}@{BotName}.tmi.twitch.tv PRIVMSG #jtv :/w {userName} {message}"
+
+This time, we are indicating the the Bot is sending a message on Twitch's server directly to the `userName` specified with the `message` to be sent.
+
+Your bot now knows how to chat with the chatroom.
+
+## Rate Limits
+
+Finally, we need to be good Twitch citizens, and obey the Twitch Speed Limit.  Chatters are only allowed to issue commands or messages at a certain speed in the chatroom.  Failure to abide by these limits will result in a ban of your bot's account.
+
+The Chatbot.cs file is pre-configured to be able to handle throttling those messages with a `CheckThrottleStatus` method.
+
+The rate limits for Twitch are [defined in their docs](https://dev.twitch.tv/docs/irc/guide/#command--message-limits).  For a bot that is NOT a moderator, we can only send 20 messages per 30 seconds.  Hopefully, you will make your bot a moderator on your channel, which will grant it 100 messages per 30 seconds.
+
+Let's set those thresholds on our bot's fields at the top of the Chatbot.cs file:
+
+    const int MAXIMUMCOMMANDS = 100;
+    TimeSpan _ThrottleDuration = TimeSpan.FromSeconds(30);
+
+That's it!  You now have a chatbot that knows how to login, interact with Twitch chat, and stay connected.
+
+There are methods in Chatbot_Handlers that will inspect each message that arrives and send it to a service that will perform Sentiment Analysis on the text, returning a value between 0 and 1.  Zero indicates a very negative message, and one indicates a very positive message.  The bot is configured to log this value to the local console for each message in chat.  More details about the Sentiment Analysis service can be discussed with [csharpfritz](https://twitter.com/csharpfritz)

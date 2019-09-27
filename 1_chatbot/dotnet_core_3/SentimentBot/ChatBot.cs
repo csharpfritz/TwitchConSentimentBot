@@ -143,13 +143,7 @@ namespace SentimentBot
       _OutputStream.WriteLine();
       _OutputStream.Flush();
 
-      if (string.IsNullOrEmpty(ChatroomId))
-      {
-        _OutputStream.WriteLine();
-      } else
-      {
-        _OutputStream.WriteLine();
-      }
+      _OutputStream.WriteLine();
       _OutputStream.Flush();
 
     }
