@@ -27,6 +27,14 @@ async function start () {
 
   topSentiments = await topSentiments.json()
 
+  if(topSentiments.length == 0) {
+    const liHTML = `No data for this channel!`
+        let liElement = document.createElement('li')
+    liElement.innerHTML = liHTML
+    // inject li
+    document.querySelector('.js-top-sentiment').appendChild(liElement)
+  }
+
   // cycle through each
   topSentiments.forEach(async function(user){
     // get their profile picture
