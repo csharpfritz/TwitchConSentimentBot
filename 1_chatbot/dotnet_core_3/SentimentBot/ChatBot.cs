@@ -17,7 +17,6 @@ namespace SentimentBot
 
 
     internal static readonly Regex reUserName = new Regex(@"!([^@]+)@");
-    internal static readonly Regex reBadges = new Regex(@"@badges=([^;]*)");
     internal static Regex reChatMessage;
     internal static Regex reWhisperMessage;
 
@@ -27,7 +26,10 @@ namespace SentimentBot
     private readonly ILogger<Worker> _Logger;
 
     private DateTime _NextReset = DateTime.MinValue;
-    const int MAXIMUMCOMMANDS = 100;
+
+    // TODO: Obey the Twitch API Rate Limit: https://dev.twitch.tv/docs/irc/guide/#command--message-limits
+    const int MAXIMUMCOMMANDS = 0;
+    TimeSpan _ThrottleDuration;
     private int _CommandCount = 0;
     private Queue<string> _CommandQueue = new Queue<string>();
     private Task _RetryTask;
@@ -37,8 +39,8 @@ namespace SentimentBot
 
       _Configuration = configuration;
       _Logger = logger;
-      reChatMessage = new Regex($@"PRIVMSG #{ChannelName} :(.*)$");
-      reWhisperMessage = new Regex($@"WHISPER {BotName} :(.*)$");
+
+      // TODO: define the regular expression patterns for broadcast and whisper messages
 
     }
 
@@ -55,7 +57,7 @@ namespace SentimentBot
     public async Task Start(CancellationToken cancellationToken)
     {
 
-      _Client = new TcpClient("irc.chat.twitch.tv", 80);
+      // TODO: Connect to Twitch IRC Servers
       var inputStream = new StreamReader(_Client.GetStream());
       _OutputStream = new StreamWriter(_Client.GetStream());
 
@@ -135,20 +137,18 @@ namespace SentimentBot
     private void Login()
     {
 
-      //_Client.Connect("irc.chat.twitch.tv", 6697);
-
-      _OutputStream.WriteLine("CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership");
-      _OutputStream.WriteLine($"PASS oauth:{AccessToken}");
-      _OutputStream.WriteLine($"NICK {BotName}");
-      _OutputStream.WriteLine($"USER {BotName} 8 * :{BotName}");
+      _OutputStream.WriteLine();
+      _OutputStream.WriteLine();
+      _OutputStream.WriteLine();
+      _OutputStream.WriteLine();
       _OutputStream.Flush();
 
       if (string.IsNullOrEmpty(ChatroomId))
       {
-        _OutputStream.WriteLine($"JOIN #{ChannelName}");
+        _OutputStream.WriteLine();
       } else
       {
-        _OutputStream.WriteLine($"JOIN #chatrooms:{ChannelId}:{ChatroomId}");
+        _OutputStream.WriteLine();
       }
       _OutputStream.Flush();
 
@@ -157,7 +157,8 @@ namespace SentimentBot
     public void PostMessage(string message)
     {
 
-      var fullMessage = $":{BotName}!{BotName}@{BotName}.tmi.twitch.tv PRIVMSG #chatrooms:{ChannelId}:{ChatroomId} :{message}";
+      // TODO: Format your message
+      var fullMessage = "";
 
       SendRawIrcMessage(fullMessage);
 
@@ -166,7 +167,8 @@ namespace SentimentBot
     public void WhisperMessage(string message, string userName)
     {
 
-      var fullMessage = $":{BotName}!{BotName}@{BotName}.tmi.twitch.tv PRIVMSG #jtv :/w {userName} {message}";
+      // TODO: Format your whisper
+      var fullMessage = "";
       SendRawIrcMessage(fullMessage);
 
     }
@@ -202,16 +204,14 @@ namespace SentimentBot
     private TimeSpan? CheckThrottleStatus()
     {
 
-      var throttleDuration = TimeSpan.FromSeconds(30);
-
       if (_NextReset == null)
       {
-        _NextReset = DateTime.UtcNow.Add(throttleDuration);
+        _NextReset = DateTime.UtcNow.Add(_ThrottleDuration);
         _CommandCount = 0;
       }
       else if (_NextReset < DateTime.UtcNow)
       {
-        _NextReset = DateTime.UtcNow.Add(throttleDuration);
+        _NextReset = DateTime.UtcNow.Add(_ThrottleDuration);
         _CommandCount = 0;
       }
 
@@ -225,20 +225,25 @@ namespace SentimentBot
 
     }
 
-    private (string User, string Message) CleanMessage(string rawMessage)
-    {
-
-      return (
-        reUserName.Match(rawMessage).Groups[1].Value, 
-        reChatMessage.Match(rawMessage).Groups[1].Value
-        );
-
-    }
 
     private static bool IsWhisper(string message)
     {
 
       return reWhisperMessage.IsMatch(message);
+
+    }
+
+
+    public static bool HandlePong(string message, ILogger logger, Action<string> send)
+    {
+
+      if (!message.StartsWith("PING")) return false;
+
+      logger.LogWarning("Received PING from Twitch... sending PONG");
+
+      // TODO: Respond with PONG
+
+      return true;
 
     }
 

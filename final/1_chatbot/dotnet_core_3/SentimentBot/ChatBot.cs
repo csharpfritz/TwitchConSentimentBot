@@ -225,20 +225,23 @@ namespace SentimentBot
 
     }
 
-    private (string User, string Message) CleanMessage(string rawMessage)
-    {
-
-      return (
-        reUserName.Match(rawMessage).Groups[1].Value, 
-        reChatMessage.Match(rawMessage).Groups[1].Value
-        );
-
-    }
 
     private static bool IsWhisper(string message)
     {
 
       return reWhisperMessage.IsMatch(message);
+
+    }
+
+
+    public static bool HandlePong(string message, ILogger logger, Action<string> send)
+    {
+
+      if (!message.StartsWith("PING")) return false;
+
+      logger.LogWarning("Received PING from Twitch... sending PONG");
+      send($"PONG :{message.Split(':')[1]}");
+      return true;
 
     }
 
