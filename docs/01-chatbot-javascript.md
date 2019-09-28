@@ -124,5 +124,5 @@ $ node index.js
 
 And try typing some messages into your chat!
 
-![](../final/node-sentiment/TwitchChatSentimentBot.PNG)
+![](../../final/node-sentiment/TwitchChatSentimentBot.PNG)
 
