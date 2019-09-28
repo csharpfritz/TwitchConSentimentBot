@@ -31,19 +31,17 @@ async function onMessageHandler (target, context, msg, self) {
   const message = msg.trim();
   let response = superagent.post('https://twitchcon.csharpfritz.com/sentiment')
     .send({
-      SentimentText: message
+      SentimentText: message,
+      Channel: 'nodebotanist'
     })
     .end((err, res) => {
-      console.log(err)
+      console.log('error', err)
+      console.log('response', res.body)
+      if(res.body) {
+        client.say('nodebotanist', `Sentiment for message ${message} is ${res.body}`)
+      }
     })
 
-  console.log(response)
-}
-
-// Function called when the "dice" command is issued
-function rollDice () {
-  const sides = 20;
-  return Math.floor(Math.random() * sides) + 1;
 }
 
 // Called every time the bot connects to Twitch chat
